@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Long‑Range Agent Design for Complex Tasks</title>
+  <style>
+    /* Apple‑inspired typography and layout */
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #333;
+      line-height: 1.6;
+      background-color: #f9f9f9;
+    }
+    header {
+      background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
+      color: white;
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      font-weight: 600;
+    }
+    header p {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+      max-width: 640px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    h2 {
+      margin-top: 2.5rem;
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #1e3c72;
+    }
+    h3 {
+      margin-top: 1.5rem;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #2a5298;
+    }
+    p {
+      margin-top: 0.5rem;
+      text-align: justify;
+    }
+    figure {
+      margin: 1.5rem 0;
+      text-align: center;
+    }
+    figure img {
+      max-width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+    figure figcaption {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 0.5rem;
+    }
+    .list {
+      margin-left: 1.5rem;
+    }
+    .list li {
+      margin-bottom: 0.5rem;
+    }
+    footer {
+      margin-top: 4rem;
+      padding: 2rem;
+      font-size: 0.9rem;
+      color: #666;
+      border-top: 1px solid #ddd;
+      text-align: center;
+    }
+    .citation {
+      font-size: 0.8rem;
+      color: #777;
+    }
+    .citation a {
+      color: #1e3c72;
+      text-decoration: none;
+    }
+    .citation a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Long‑Range Agent Design for Complex Tasks</h1>
+    <p>An in‑depth review of the Tencent Cloud Intelligent Penetration Hackathon, winning agent architectures, and best practices for building long‑running AI agents.</p>
+  </header>
+  <div class="container">
+    <figure>
+      <img src="assets/ai_collaboration.png" alt="Abstract illustration of multi‑agent collaboration">
+      <figcaption>An abstract representation of multi‑agent collaboration for long‑range problem solving.</figcaption>
+    </figure>
+    
+    <h2>1. Introduction</h2>
+    <p>Autonomous agents are software entities powered by large language models (LLMs) that can reason, decide and act.  When combined with a collection of tools and a harness that manages state, context and workflows, these agents can tackle tasks far beyond a single query—writing code, planning research, or in this case performing <em>penetration testing</em>.  Designing agents for complex, long‑range tasks is challenging: the model’s context window is finite, state must be persisted across multiple operations, and hallucinations or early termination must be detected and corrected.  The <strong>Tencent Cloud Intelligent Penetration Hackathon</strong> was a unique competition that required participants to build fully autonomous agents to hack into vulnerable web applications.  Analyzing the top entries provides valuable lessons for constructing industry‑leading agents and harnesses.</p>
+
+    <h2>2. Event Overview</h2>
+    <p>The second edition of the Tencent Cloud Smart Penetration Hackathon asked teams to create AI agents that autonomously perform penetration tests on a series of web challenges.  Human assistance was forbidden after the initial submission.  Teams had to manage long‑running sessions, coordinate tool usage, and avoid getting stuck.  Evaluation was based on the number of flags submitted, efficiency, stability, and generalisation across unseen challenges.  The top teams open‑sourced their solutions, providing a rare window into advanced agent architectures.  The champion team (<strong>ai 小分队</strong>) utilised a three‑layer <em>Manager–Solver–Observer</em> design with sophisticated context handling【573980424352187†L74-L88】【298758664089663†L30-L33】, while other competitors explored blackboard architectures, graph‑based planners and intention‑driven super‑agents.</p>
+
+    <h2>3. Agent Basics and Harness Concepts</h2>
+    <p>An <strong>agent</strong> is an LLM guided by a system prompt, allowed to iteratively observe the environment and act using tools.  An agent harness provides the surrounding infrastructure: tool definitions, persistent memory, scheduling logic and safety guards.  Effective harnesses must address three core challenges:</p>
+    <ul class="list">
+      <li><strong>Finite context.</strong>  LLMs can read only a limited amount of text; as tasks grow, context windows fill up and earlier information is lost.  Solutions include summarisation, hierarchical memory and rewriting strategies, such as the <em>RTK rewrite</em> used by the winning team to compress context into progressively smaller summaries【738928078656857†L28-L99】.</li>
+      <li><strong>Persistent state.</strong>  Long‑running agents must remember progress across steps or sessions.  External storage, configuration files or databases can hold <em>memory</em> (detailed logs and tool outputs) and <em>ideas</em> (high‑level plans) separately, enabling retrieval and reflection without cluttering the working context【738928078656857†L28-L99】.</li>
+      <li><strong>Self‑verification and termination.</strong>  Without guidance, agents may loop indefinitely or stop prematurely.  Harnesses incorporate evaluators or observers that monitor progress and decide when to continue or halt.  Addy Osmani describes the need for <em>self‑verification loops</em> and context resets to manage long‑running agents【929632428241154†L0-L33】【929632428241154†L40-L66】, while Anthropic proposes separate planner, generator and evaluator agents to maintain quality over long runs【706319823407743†L41-L47】【706319823407743†L60-L80】.</li>
+    </ul>
+    <p>These concepts underpin most modern multi‑agent frameworks, such as LangGraph, CrewAI, AutoGen and the pi‑coding‑agent SDK, each of which offers distinct memory and orchestration strategies【647580678873974†L40-L96】.</p>
+
+    <h2>4. Analysis of the Champion Team: BreachWeave</h2>
+    <h3>4.1 Architecture</h3>
+    <p>The champion team (<em>ai 小分队</em>) open‑sourced their solution as <strong>BreachWeave</strong>.  The system employs a three‑layer architecture consisting of a <strong>Manager</strong>, multiple <strong>Solver</strong> agents, and an <strong>Observer</strong>【738928078656857†L28-L99】:</p>
+    <ul class="list">
+      <li><strong>Manager.</strong>  Acts as a project manager and global scheduler.  It creates challenges, assigns solvers to tasks, monitors progress, summarises state and coordinates the termination of tasks.  The manager orchestrates interactions through a set of <em>planning tools</em> that the underlying LLM calls (e.g., <code>planner_start_challenge</code>, <code>planner_launch_solver</code>) to issue structured instructions to the harness.</li>
+      <li><strong>Solver agents.</strong>  Execute the actual penetration testing tasks: information gathering, vulnerability verification, exploitation and flag submission.  Multiple solvers can run concurrently on different attack vectors, maximising coverage.  Each solver maintains its own memory and ideas and utilises RTK rewriting to compress long context into succinct summaries for the LLM.</li>
+      <li><strong>Observer.</strong>  Monitors solver behaviour without interfering.  It checks for context drift, early stopping or hallucination and logs issues.  The manager consults the observer’s reports to decide whether to continue, restart or stop solvers.</li>
+    </ul>
+    <p>This decoupled design allows specialized agents to operate autonomously while a central orchestrator ensures coherence.  The system externalises termination conditions through a <em>Ralph loop</em> that repeatedly builds a state snapshot, runs the planner to decide next actions and executes until a challenge is completed or time limits are reached【738928078656857†L28-L99】.</p>
+
+    <h3>4.2 Code‑Level and Harness Details</h3>
+    <p>The <em>manager</em> implementation (<code>packages/core/src/challenge/manager.ts</code>) defines constants for timeouts, solver concurrency and memory limits.  It exposes methods to start and stop challenges, launch solvers, compress tasks, summarise memory/ideas, and interface with the official API.  A notable feature is the <strong>Planner Tools</strong> registry: a set of declarative functions (e.g., <code>planner_get_state</code>, <code>planner_launch_solver</code>) that the underlying LLM uses to manipulate the challenge state.  The manager builds a snapshot containing the current memory, ideas, hint summaries and solver statuses and feeds it into a planner agent session.  The planner then decides whether to start a new solver, stop an existing one or submit a flag.  By exposing only high‑level operations, the harness constrains the LLM’s actions, ensuring safety and consistency.  Helper functions compute digests and format tables to display solver states, while asynchronous loops poll the API for new chay and asynchronous tasks, includes various decoders (base64, JSFuck, PHP filters) and provides a modular toolchain for building payloads【265727408226434†L90-L164】.  Compared with BreachWeave, ctfSolver emphasizes specialized modules for each stage of exploitation and heavy use of custom scanners.</p>
+    <h3>5.2 Bytex – <em>Cairn</em></h3>
+    <p>Bytex’s team openly challenges multi‑agent orthodoxy.  Their blog advocates for a <strong>blackboard architecture</strong> and a single problem‑solving engine instead of separate gatherer/exploiter agents.  Cairn uses a directed acyclic graph (DAG) to represent tasks and emphasises minimalism—just one necessary skill for flag submission and no separate knowledge bases or RAG.  They argue that general skills or pre‑built modules add overhead and limit adaptability; instead, the agent should learn to use general tools flexibly.  This philosophy starkly contrasts with multi‑agent, tool‑heavy designs【106825557809923†L127-L155】.</p>
+    <h3>5.3 Design Patterns from Top Teams</h3>
+    <p>A comprehensive review of the competition highlighted two overarching philosophies: <strong>project manager + expert group</strong> (manager coordinates multiple specialised agents) and <strong>intention‑driven super agent</strong> (a single powerful LLM given high‑level intent and allowed to call tools directly).  The review distilled six architecture patterns: hierarchical multi‑agent, collaborative multi‑agent, intention‑driven super agent, monitored black‑box agent, client‑server (MCP), and human‑in‑loop supervisor.  Successful teams often used sandboxed environments, configuration‑driven tool definitions, long‑context management strategies and frameworks like AutoGen, CrewAI or LangGraph【109715614997539†L220-L256】.</p>
+
+    <h2>6. Harness Design for Long‑Range Agents</h2>
+    <p>Beyond the hackathon, research from industry sheds light on long‑range agent design.  Addy Osmani describes <strong>long‑running agents</strong> as those that maintain progress across hours or days, requiring context resets, persistent storage and self‑verification loops【929632428241154†L0-L33】.  Anthropic’s guide proposes splitting the harness into a <em>planner</em>, <em>generator</em> and <em>evaluator</em>, allowing tasks to be decomposed into chunks with structured hand‑offs and external evaluation to maintain quality【706319823407743†L41-L47】【706319823407743†L60-L80】.  These insights align with the hackathon’s top designs: separation of concerns, externalised evaluation and iterative loops.  A generic harness for complex tasks should:</p>
+    <ul class="list">
+      <li>Isolate memory, ideas and context into separate stores, enabling summaries and rewrites.</li>
+      <li>Expose a minimal set of high‑level planning tools rather than free‑form text instructions to the LLM.</li>
+      <li>Employ observers or evaluators that monitor progress and provide objective feedback.</li>
+      <li>Reset context or compress history periodically to avoid overflow and preserve important information.</li>
+      <li>Plan in loops (e.g., Ralph loop) where the agent iteratively examines state, decides next actions and repeats until termination criteria are met.</li>
+    </ul>
+
+    <h2>7. Framework Comparison and Recommendations</h2>
+    <p>Modern agent frameworks offer varying degrees of flexibility and convenience.  Key characteristics include memory management, orchestration flexibility and integration ease.  Below is a concise comparison of popular frameworks【647580678873974†L40-L96】【647580678873974†L115-L156】【647580678873974†L159-L170】:</p>
+    <table border="1" cellpadding="6" cellspacing="0" style="border-collapse: collapse; width: 100%; font-size: 0.9rem;">
+      <tr style="background-color:#f0f5fc; font-weight: bold;">
+        <th>Framework</th>
+        <th>Memory Strategy</th>
+        <th>Strengths</th>
+        <th>Weaknesses</th>
+      </tr>
+      <tr>
+        <td><strong>LangGraph</strong></td>
+        <td>Graph‑based; supports custom short‑term and long‑term memory, entity memory, vector stores.</td>
+        <td>Highly flexible for custom graphs and memory modules; good for complex workflows.</td>
+        <td>Complex configuration; error‑prone for newcomers; heavy resource usage.</td>
+      </tr>
+      <tr>
+        <td><strong>CrewAI</strong></td>
+        <td>Built‑in short‑term (RAG), long‑term (SQLite), entity and contextual memory.</td>
+        <td>Simple to set up; supports role‑based agents; good defaults for many tasks.</td>
+        <td>Less flexible for non‑standard workflows; limited concurrency control.</td>
+      </tr>
+      <tr>
+        <td><strong>AutoGen</strong></td>
+        <td>Message list for short‑term memory; allows integration with external storage for long‑term.</td>
+        <td>Strong tool integration; good for interactive chatbots and task‑oriented flows.</td>
+        <td>Requires custom storage for long tasks; limited built‑in evaluation mechanisms.</td>
+      </tr>
+      <tr>
+        <td><strong>pi‑coding‑agent</strong></td>
+        <td>Minimalist core; session state persists across actions; encourages self‑extension; built around four basic tools (Read, Write, Edit, Bash).</td>
+        <td>Lightweight; encourages customisation; supports branching and persistent state; used by OpenClaw and BreachWeave.</td>
+        <td>Requires more engineering to build high‑level behaviours; small community; limited built‑in features.</td>
+      </tr>
+    </table>
+    <p>For a penetration‑testing or programming agent, the choice depends on trade‑offs:</p>
+    <ul class="list">
+      <li><strong>pi‑coding‑agent</strong> is ideal when you need maximum control and are willing to build the harness yourself.  It offers a minimal core with persistent sessions and encourages the agent to extend itself.  BreachWeave demonstrates how to layer a planner and solver on top of Pi, achieving robust performance.</li>
+      <li><strong>LangGraph</strong> excels in scenarios requiring complex workflows with many branches and custom memory types, though its complexity may be overkill for simple tasks.</li>
+      <li><strong>CrewAI</strong> provides a balanced starting point with built‑in memory stores and role‑based agents; it suits tasks where quick prototyping is more important than fine‑grained control.</li>
+      <li><strong>AutoGen</strong> is useful for interactive agents with simpler memory needs; additional evaluation loops must be implemented externally for long‑running tasks.</li>
+    </ul>
+    <p>In summary, for long‑range penetration or programming agents, adopting a customised harness inspired by BreachWeave—built atop pi‑coding‑agent or LangGraph—offers the greatest flexibility to implement context compression, multi‑agent orchestration and external evaluation.  However, if rapid development and built‑in features are desired, CrewAI is an excellent alternative.</p>
+
+    <h2>8. Unknown Unknowns and Additional Insights</h2>
+    <p>When designing long‑range agents, it is easy to underestimate certain pitfalls:</p>
+    <ul class="list">
+      <li><strong>Tool reliability.</strong>  Agents rely on external tools; network errors, rate limits or inconsistent outputs can derail progress.  The harness should implement retries and graceful fallbacks.</li>
+      <li><strong>Model variance.</strong>  Running multiple models improves robustness, but differences in behaviour can produce conflicting plans.  A ranking or voting mechanism is needed to resolve disagreements.</li>
+      <li><strong>Security and sandboxing.</strong>  Penetration agents may accidentally attack unintended targets or leak sensitive data.  Always run agents in isolated sandboxes and restrict tool capabilities.</li>
+      <li><strong>Ethical considerations.</strong>  Autonomous hacking agents raise ethical and legal issues.  Such systems should be deployed only for sanctioned assessments with strict safeguards.</li>
+      <li><strong>Evaluation metrics.</strong>  Standard metrics like number of flags may not capture the quality of reasoning, efficiency or resilience.  Consider including logs analysis and human evaluation.</li>
+    </ul>
+
+    <h2>9. Conclusion</h2>
+    <p>The Tencent Cloud Intelligent Penetration Hackathon showcased cutting‑edge approaches to building autonomous agents for complex tasks.  The champion BreachWeave system exemplifies a sophisticated harness: separating roles into manager, solver and observer; compressing context via multi‑pass rewriting; externalising termination conditions; and leveraging multi‑model ensembles.  Other teams explored minimalistic DAG‑based planners, specialized scanners, and intention‑driven super‑agents, highlighting the diverse design space.  Research from industry underscores the importance of long‑running agent loops, persistent state, and external evaluation.  Choosing the right framework depends on task complexity and engineering resources: pi‑coding‑agent offers unmatched flexibility for custom harnesses; LangGraph and CrewAI provide structured scaffolds; and AutoGen simplifies tool integration.  Ultimately, successful long‑range agents require careful harness design that balances autonomy with safety, enabling LLMs to reason, act and persist over extended missions.</p>
+    
+    <footer>
+      <p class="citation">Sources: the information and quotations in this report are drawn from open‑source documents, team repositories and articles.  Key references include the Zhihu event review【573980424352187†L74-L88】, the BreachWeave README【738928078656857†L28-L99】, competitor blogs and reports【106825557809923†L127-L155】【109715614997539†L220-L256】, and research on long‑running agents【929632428241154†L0-L33】【706319823407743†L41-L47】【647580678873974†L40-L96】.  Citations are included inline throughout the report.</p>
+    </footer>
+  </div>
+</body>
+</html>
